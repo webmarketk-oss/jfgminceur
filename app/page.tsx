@@ -11,6 +11,7 @@ declare global {
 
 const LEAD_WEBHOOK_URL = process.env.NEXT_PUBLIC_LEAD_WEBHOOK_URL;
 const META_PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID;
+const DISCOVERY_PRICE = process.env.NEXT_PUBLIC_DISCOVERY_PRICE ?? "79";
 
 const expectations = [
   "Perte de poids localisée",
@@ -106,27 +107,28 @@ function getOfferFromBmi(bmi: number | null) {
   if (!bmi) {
     return {
       label: "Votre offre découverte vous attend",
-      type: "Bilan offert + séance test haute technologie à 79 euros",
+      type: `Bilan offert + séance découverte haute technologie à ${DISCOVERY_PRICE} euros`,
     };
   }
 
   if (bmi < 27) {
     return {
       label: "Bonne nouvelle, vous êtes éligible à notre offre cryo",
-      type: "Bilan offert + séance test haute technologie à 79 euros",
+      type: `Bilan offert + séance découverte haute technologie à ${DISCOVERY_PRICE} euros`,
     };
   }
 
   return {
-    label: "Bonne nouvelle, vous êtes éligible à notre offre à -50% parcours minceur",
-    type: "Bilan offert + séance test haute technologie à 79 euros",
+    label: "Bonne nouvelle, vous êtes éligible à notre offre minceur découverte à -50%",
+    type: `Bilan offert + séance découverte haute technologie à ${DISCOVERY_PRICE} euros`,
   };
 }
 
 export default function Home() {
   const [selectedExpectations, setSelectedExpectations] = useState<string[]>([]);
   const [selectedZones, setSelectedZones] = useState<string[]>([]);
-  const [step, setStep] = useState<"quiz" | "form" | "result">("quiz");
+  const [quizQuestion, setQuizQuestion] = useState<"expectations" | "zones">("expectations");
+  const [step, setStep] = useState<"quiz" | "form" | "calculating" | "result">("quiz");
   const [messageOptIn, setMessageOptIn] = useState("oui");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [bmi, setBmi] = useState<number | null>(null);
@@ -167,7 +169,12 @@ export default function Home() {
   }
 
   function goToForm() {
-    if (selectedExpectations.length === 0 || selectedZones.length === 0) return;
+    if (selectedExpectations.length === 0) return;
+    if (quizQuestion === "expectations") {
+      setQuizQuestion("zones");
+      return;
+    }
+    if (selectedZones.length === 0) return;
     track("CustomizeProduct", {
       expectations: selectedExpectations,
       zones: selectedZones,
@@ -186,6 +193,7 @@ export default function Home() {
 
     setBmi(computedBmi);
     setIsSubmitting(true);
+    setStep("calculating");
 
     const payload = {
       full_name: String(data.get("full_name") ?? ""),
@@ -197,6 +205,7 @@ export default function Home() {
       imc: computedBmi ?? "",
       recommended_offer: computedOffer.label,
       offer_details: computedOffer.type,
+      discovery_price: DISCOVERY_PRICE,
       expectations: selectedExpectations,
       zones: selectedZones,
       message_opt_in: messageOptIn,
@@ -217,10 +226,10 @@ export default function Home() {
       }
       track("Lead", {
         content_name: computedOffer.label,
-        value: 79,
+        value: Number(DISCOVERY_PRICE),
         currency: "EUR",
       });
-      setStep("result");
+      window.setTimeout(() => setStep("result"), 1200);
     } finally {
       setIsSubmitting(false);
     }
@@ -235,16 +244,11 @@ export default function Home() {
 
         <div className="hero-grid">
           <div className="hero-copy">
-            <p className="eyebrow">Offre découverte minceur</p>
-            <h1>Vérifiez votre éligibilité à votre offre découverte à -50%</h1>
-            <p className="lead">
-              Bilan offert + séance test haute technologie à 79 euros, selon votre
-              profil et vos objectifs silhouette.
-            </p>
-            <div className="offer-line">
+            <div className="hero-steps">
               <strong>2 étapes</strong>
-              <span>Réponse immédiate après calcul IMC</span>
+              <span>Réponse immédiate après calcul de votre IMC</span>
             </div>
+            <h1>Vérifiez votre éligibilité à votre offre découverte à -50%</h1>
           </div>
 
           <div className="results-strip" aria-label="Avant après JFG Clinic">
@@ -268,47 +272,49 @@ export default function Home() {
           <div className="panel-inner">
             <div className="panel-head">
               <span>Étape 1 sur 2</span>
-              <h2>Quelles sont vos attentes principales ?</h2>
+              <p className="red-note">Obtenez votre offre découverte à -50%</p>
+              <h2>
+                {quizQuestion === "expectations"
+                  ? "Quelles sont vos attentes principales ?"
+                  : "Quelles zones souhaitez-vous cibler ?"}
+              </h2>
               <p>Vous pouvez cocher plusieurs réponses.</p>
             </div>
 
             <div className="choice-group">
-              {expectations.map((item) => (
-                <button
-                  className={selectedExpectations.includes(item) ? "choice selected" : "choice"}
-                  key={item}
-                  onClick={() => toggle(selectedExpectations, setSelectedExpectations, item)}
-                  type="button"
-                >
-                  {item}
-                </button>
-              ))}
-            </div>
-
-            <div className="panel-head compact">
-              <h3>Quelle zone souhaitez-vous cibler ?</h3>
-            </div>
-
-            <div className="choice-group">
-              {zones.map((item) => (
-                <button
-                  className={selectedZones.includes(item) ? "choice selected" : "choice"}
-                  key={item}
-                  onClick={() => toggle(selectedZones, setSelectedZones, item)}
-                  type="button"
-                >
-                  {item}
-                </button>
-              ))}
+              {(quizQuestion === "expectations" ? expectations : zones).map((item) => {
+                const selected =
+                  quizQuestion === "expectations"
+                    ? selectedExpectations.includes(item)
+                    : selectedZones.includes(item);
+                return (
+                  <button
+                    className={selected ? "choice selected" : "choice"}
+                    key={item}
+                    onClick={() =>
+                      quizQuestion === "expectations"
+                        ? toggle(selectedExpectations, setSelectedExpectations, item)
+                        : toggle(selectedZones, setSelectedZones, item)
+                    }
+                    type="button"
+                  >
+                    {item}
+                  </button>
+                );
+              })}
             </div>
 
             <button
               className="primary-cta"
-              disabled={selectedExpectations.length === 0 || selectedZones.length === 0}
+              disabled={
+                quizQuestion === "expectations"
+                  ? selectedExpectations.length === 0
+                  : selectedZones.length === 0
+              }
               onClick={goToForm}
               type="button"
             >
-              Continuer vers mon offre
+              {quizQuestion === "expectations" ? "Continuer" : "Continuer pour accéder à mon offre"}
             </button>
           </div>
         )}
@@ -318,7 +324,7 @@ export default function Home() {
             <div className="panel-head">
               <span>Étape 2 sur 2</span>
               <h2>Nous calculons votre IMC pour adapter votre offre</h2>
-              <p>Bilan offert + séance test haute technologie à 79 euros.</p>
+              <p className="red-note">Je veux ma séance découverte haute technologie à -50%</p>
             </div>
 
             <div className="field-grid">
@@ -347,7 +353,7 @@ export default function Home() {
             </div>
 
             <button className="primary-cta" disabled={isSubmitting} type="submit">
-              {isSubmitting ? "Validation..." : "Voir mon offre éligible"}
+              {isSubmitting ? "Calcul en cours..." : "Voir si je suis éligible à mon offre"}
             </button>
             <p className="microcopy">
               IMC indicatif, utilisé uniquement pour orienter votre bilan. Une conseillère
@@ -356,18 +362,26 @@ export default function Home() {
           </form>
         )}
 
+        {step === "calculating" && (
+          <div className="panel-inner calculating">
+            <div className="loader" />
+            <h2>Calcul de votre IMC en cours</h2>
+            <p>Nous préparons l'offre découverte la plus adaptée à votre profil.</p>
+          </div>
+        )}
+
         {step === "result" && (
           <div className="panel-inner result">
-            <span>Demande envoyée</span>
-            <h2>{offer.label}</h2>
+            <span>Votre demande a été envoyée</span>
+            <h2>
+              Bonne nouvelle, vous êtes éligible à notre bilan offert + notre séance
+              découverte haute technologie à {DISCOVERY_PRICE} euros
+            </h2>
             <p>
-              Votre IMC indicatif est de <strong>{bmi}</strong>. Une personne de
-              l'équipe vous contactera pour confirmer votre bilan offert et votre
-              séance test haute technologie à 79 euros.
+              Votre IMC indicatif est de <strong>{bmi}</strong>. Votre rendez-vous
+              personnalisé dure environ 1h30 avec votre experte minceur. Une personne
+              de l'équipe vous contactera pour valider votre créneau.
             </p>
-            <a className="primary-cta" href="#avis">
-              Voir les avis clients
-            </a>
           </div>
         )}
       </section>
