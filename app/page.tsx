@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 
 declare global {
   interface Window {
@@ -125,6 +125,7 @@ function getOfferFromBmi(bmi: number | null) {
 }
 
 export default function Home() {
+  const panelRef = useRef<HTMLElement | null>(null);
   const [selectedExpectations, setSelectedExpectations] = useState<string[]>([]);
   const [selectedZones, setSelectedZones] = useState<string[]>([]);
   const [quizQuestion, setQuizQuestion] = useState<"expectations" | "zones">("expectations");
@@ -139,6 +140,13 @@ export default function Home() {
   useEffect(() => {
     setCenterName(getCenterName());
   }, []);
+
+  useEffect(() => {
+    if (step !== "calculating" && step !== "result") return;
+    window.setTimeout(() => {
+      panelRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 40);
+  }, [step]);
 
   useEffect(() => {
     if (!META_PIXEL_ID || typeof window === "undefined" || window.fbq) return;
@@ -239,7 +247,7 @@ export default function Home() {
     <main>
       <section className="hero">
         <header className="brand">
-          <img src="/jfg-logo.jpg" alt="JFG Clinic - La Clinic de la Beauté" />
+          <img src="/jfg-logo-2026.jpg" alt="JFG Clinic - La Clinic de la Beauté" />
         </header>
 
         <div className="hero-grid">
@@ -267,7 +275,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="conversion-panel" id="formulaire">
+      <section className="conversion-panel" id="formulaire" ref={panelRef}>
         {step === "quiz" && (
           <div className="panel-inner">
             <div className="panel-head">
