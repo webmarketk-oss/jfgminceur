@@ -229,7 +229,7 @@ export default function Home() {
         value: Number(DISCOVERY_PRICE),
         currency: "EUR",
       });
-      window.setTimeout(() => setStep("result"), 1200);
+      window.setTimeout(() => setStep("result"), 2200);
     } finally {
       setIsSubmitting(false);
     }
@@ -365,8 +365,8 @@ export default function Home() {
         {step === "calculating" && (
           <div className="panel-inner calculating">
             <div className="loader" />
-            <h2>Calcul de votre IMC en cours</h2>
-            <p>Nous préparons l'offre découverte la plus adaptée à votre profil.</p>
+            <h2>Analyse de vos résultats en cours</h2>
+            <p>Nous calculons votre IMC et préparons l'offre découverte adaptée à votre profil.</p>
           </div>
         )}
 
@@ -389,7 +389,7 @@ export default function Home() {
       <section className="proof">
         <div className="section-head">
           <span>Résultats</span>
-          <h2>Des parcours visibles, suivis et accompagnés</h2>
+          <h2>Nous limitons chaque mois le nombre de nouvelles demandes afin de garantir entière satisfaction.</h2>
         </div>
         <div className="before-after-grid">
           {beforeAfter.map((item) => (
@@ -404,7 +404,7 @@ export default function Home() {
       <section className="reviews" id="avis">
         <div className="section-head">
           <span>Avis clients</span>
-          <h2>Ce que nos clientes disent de JFG Clinic</h2>
+          <h2>Ce que nos clients disent de nous</h2>
         </div>
         <div className="review-grid">
           {reviews.map((review) => (
