@@ -260,7 +260,7 @@ export default function Home() {
           </div>
 
           <div className="results-strip" aria-label="Avant après JFG Clinic">
-            <p className="scroll-hint">Faites défiler les résultats</p>
+            <p className="scroll-hint">Faites défiler les success stories de nos clientes</p>
             <div className="results-track">
               {beforeAfter.map((item, index) => (
                 <article className="result-card" key={`${item.title}-${index}`}>

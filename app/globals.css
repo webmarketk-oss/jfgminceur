@@ -67,7 +67,7 @@ main {
 }
 
 .hero {
-  padding: 20px 0 24px;
+  padding: max(20px, env(safe-area-inset-top)) 0 24px;
 }
 
 .brand {
@@ -168,10 +168,10 @@ main {
 .result-card {
   flex: 0 0 min(292px, 76vw);
   overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: #ffffff;
-  box-shadow: 0 12px 30px rgba(20, 20, 20, 0.08);
+  border: 1px solid rgba(13, 146, 127, 0.24);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.68);
+  box-shadow: 0 14px 34px rgba(20, 20, 20, 0.07);
   scroll-snap-align: start;
 }
 
@@ -184,9 +184,9 @@ main {
 }
 
 .result-card img {
-  aspect-ratio: 1;
-  background: #f7f2ef;
-  object-fit: contain;
+  height: auto;
+  background: #ffffff;
+  object-fit: initial;
 }
 
 .scroll-hint {
@@ -500,7 +500,15 @@ details p {
   }
 
   .hero {
-    padding-top: 12px;
+    padding-top: calc(env(safe-area-inset-top) + 22px);
+  }
+
+  .brand {
+    padding: 0 0 18px;
+  }
+
+  .brand img {
+    width: min(330px, 78vw);
   }
 
   .hero-grid,
@@ -524,7 +532,7 @@ details p {
   }
 
   .result-card {
-    flex-basis: 78vw;
+    flex-basis: 82vw;
   }
 
   .message-consent {
