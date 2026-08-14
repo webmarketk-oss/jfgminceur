@@ -260,10 +260,11 @@ export default function Home() {
           </div>
 
           <div className="results-strip" aria-label="Avant après JFG Clinic">
+            <p className="scroll-hint">Faites défiler les résultats</p>
             <div className="results-track">
-              {[...beforeAfter, ...beforeAfter].map((item, index) => (
+              {beforeAfter.map((item, index) => (
                 <article className="result-card" key={`${item.title}-${index}`}>
-                  <img src={item.src} alt={item.title} loading={index > 2 ? "lazy" : "eager"} />
+                  <img src={item.src} alt={item.title} loading={index > 1 ? "lazy" : "eager"} />
                   <div>
                     <strong>{item.title}</strong>
                     <span>Avant / après</span>
